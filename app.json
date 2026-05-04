@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Assistente Jurídico IA",
+    "slug": "assistente-juridico",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "assistentejuridico",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maikoncaldeira.assistentejuridico"
+    },
+    "android": {
+      "package": "com.maikoncaldeira.assistentejuridico",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"
+      ],
+      "usesCleartextTraffic": true
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "plugins": ["expo-splash-screen"],
+    "owner": "maikons-individual-orga2",
+    "extra": {
+      "eas": {
+        "projectId": "cdf4f804-8f80-4135-8a15-4b60a9f304b0"
+      }
+    }
+  }
+}

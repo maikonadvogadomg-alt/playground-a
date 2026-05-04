@@ -1,0 +1,76 @@
+#!/bin/bash
+# Script de build automático — tenta submeter assim que o EAS resetar
+# Compila: 1) DevMobile (IDE no Celular)  2) Assistente Jurídico IA
+echo "=== DevMobile + Assistente Jurídico Auto-Build ==="
+echo "Iniciado em: $(date)"
+echo "Tentando a cada 15 minutos até o limite resetar..."
+
+build_project() {
+  local LABEL="$1"
+  local DIR="$2"
+  local URL="$3"
+  local ATTEMPT=0
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  📦 Buildando: $LABEL"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+  while true; do
+    ATTEMPT=$((ATTEMPT+1))
+    echo ""
+    echo "[$(date +%H:%M)] Tentativa $ATTEMPT — $LABEL..."
+
+    OUTPUT=$(cd "$DIR" && EAS_NO_VCS=1 EAS_SKIP_AUTO_FINGERPRINT=1 eas build --platform android --profile preview --non-interactive --no-wait 2>&1)
+
+    if echo "$OUTPUT" | grep -q "Build queued\|Build started\|Build created\|queued as\|in the queue" && ! echo "$OUTPUT" | grep -q "used its Android builds\|Error:"; then
+      echo ""
+      echo "╔══════════════════════════════════════╗"
+      echo "║  ✅ $LABEL — SUBMETIDO!              ║"
+      echo "╚══════════════════════════════════════╝"
+      echo ""
+      echo "$OUTPUT" | grep -v "^$" | tail -10
+      echo "ACESSE: $URL"
+      return 0
+    elif echo "$OUTPUT" | grep -q "used its Android builds\|builds from the Free plan"; then
+      HORAS=$(echo "$OUTPUT" | grep -oP '\d+ hour' | head -1)
+      echo "  ⏳ Ainda bloqueado ($HORAS restantes). Aguardando 15 minutos..."
+      sleep 900
+    elif echo "$OUTPUT" | grep -q "Uploaded to EAS" && ! echo "$OUTPUT" | grep -q "Error:"; then
+      echo ""
+      echo "╔══════════════════════════════════════╗"
+      echo "║  ✅ $LABEL — ENVIADO!                ║"
+      echo "╚══════════════════════════════════════╝"
+      echo ""
+      echo "$OUTPUT" | tail -10
+      echo "ACESSE: $URL"
+      return 0
+    else
+      echo "  ⚠️  Resposta inesperada. Aguardando 10 minutos..."
+      echo "$OUTPUT" | grep -v "^$" | tail -8
+      sleep 600
+    fi
+  done
+}
+
+# 1. DevMobile — IDE no Celular
+build_project \
+  "DevMobile (IDE no Celular)" \
+  "/home/runner/workspace/artifacts/mobile" \
+  "https://expo.dev/accounts/maikon36/projects/app-ide/builds"
+
+# 2. Assistente Jurídico IA
+if [ ! -d "/home/runner/workspace/assistente-juridico-apk/node_modules" ]; then
+  echo ""
+  echo "📦 Instalando dependências do Assistente Jurídico..."
+  cd /home/runner/workspace/assistente-juridico-apk && npm install --silent
+fi
+
+build_project \
+  "Assistente Jurídico IA" \
+  "/home/runner/workspace/assistente-juridico-apk" \
+  "https://expo.dev/accounts/maikon36/projects/assistente-juridico/builds"
+
+echo ""
+echo "✅ TODOS OS BUILDS SUBMETIDOS!"
+echo "Acesse expo.dev/accounts/maikon36 para acompanhar."
